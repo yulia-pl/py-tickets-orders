@@ -1,17 +1,14 @@
 from rest_framework import viewsets
-
-from cinema.models import Genre, Actor, CinemaHall, Movie, MovieSession
-
+from rest_framework.permissions import IsAuthenticated
+from cinema.models import Genre, Actor, CinemaHall, Movie, MovieSession, Order
 from cinema.serializers import (
     GenreSerializer,
     ActorSerializer,
     CinemaHallSerializer,
-    MovieSerializer,
-    MovieSessionSerializer,
-    MovieSessionListSerializer,
-    MovieDetailSerializer,
-    MovieSessionDetailSerializer,
     MovieListSerializer,
+    MovieSerializer,
+    MovieSessionListSerializer,
+    OrderSerializer,
 )
 
 
@@ -32,27 +29,22 @@ class CinemaHallViewSet(viewsets.ModelViewSet):
 
 class MovieViewSet(viewsets.ModelViewSet):
     queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
 
     def get_serializer_class(self):
         if self.action == "list":
             return MovieListSerializer
-
-        if self.action == "retrieve":
-            return MovieDetailSerializer
-
         return MovieSerializer
 
 
 class MovieSessionViewSet(viewsets.ModelViewSet):
     queryset = MovieSession.objects.all()
-    serializer_class = MovieSessionSerializer
+    serializer_class = MovieSessionListSerializer
 
-    def get_serializer_class(self):
-        if self.action == "list":
-            return MovieSessionListSerializer
 
-        if self.action == "retrieve":
-            return MovieSessionDetailSerializer
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
 
-        return MovieSessionSerializer
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
